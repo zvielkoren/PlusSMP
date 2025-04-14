@@ -1,99 +1,63 @@
 package com.zvicraft;
 
-import com.mojang.brigadier.CommandDispatcher;
+import com.zvicraft.block.ModBlocks;
+import com.zvicraft.command.PowerCommand;
+import com.zvicraft.command.TrustCommand;
+import com.zvicraft.database.PowerDatabase;
+import com.zvicraft.item.ModItems;
+import com.zvicraft.keybinding.KeyBindings;
+import com.zvicraft.power.PowerSystem;
+import com.zvicraft.trust.TrustSystem;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
-import java.util.UUID;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.minecraft.server.MinecraftServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PlusSMP implements ModInitializer {
-    public static final String PLUS_SMP_SERVER = "plussmp";
-    private final PowerManager powerManager = new PowerManager();
+    public static final String MOD_ID = "plussmp";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     @Override
     public void onInitialize() {
-        ModScreenRegistry.register(ModScreenHandlers.POWER_SCREEN_HANDLER, PowerScreen::new);
-        ModScreenHandlers.register();
+        LOGGER.info("Initializing PlusSMP Mod");
 
-        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> registerCommands(dispatcher));
+        // Initialize database
+        PowerDatabase.initialize();
+
+        // Register blocks and items
+        ModBlocks.registerModBlocks();
+        ModItems.registerModItems();
+
+        // Register commands
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            PowerCommand.register(dispatcher);
+            TrustCommand.register(dispatcher);
+        });
+
+        // Register server events
+        ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStarting);
+        ServerLifecycleEvents.SERVER_STOPPED.register(this::onServerStopped);
+        ServerTickEvents.END_SERVER_TICK.register(this::onServerTick);
     }
 
-    private void registerCommands(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("plusS2")
-                .executes(context -> {
-                    startPlusS2(context.getSource(), 60); // Default to 60 minutes
-                    return 1;
-                })
-        );
-
-        dispatcher.register(CommandManager.literal("PlusMidS2")
-                .executes(context -> {
-                    startPlusMidS2(context.getSource());
-                    return 1;
-                })
-        );
-
-        dispatcher.register(CommandManager.literal("PlusEventMidS2")
-                .executes(context -> {
-                    startPlusEventMidS2(context.getSource());
-                    return 1;
-                })
-        );
-
-        dispatcher.register(CommandManager.literal("PlusEndFight")
-                .executes(context -> {
-                    startPlusEndFight(context.getSource());
-                    return 1;
-                })
-        );
-
-        dispatcher.register(CommandManager.literal("activatePower")
-                .executes(context -> {
-                    ServerPlayerEntity player = context.getSource().getPlayer();
-                    if (player != null) {
-                        UUID playerId = player.getUuid();
-                        powerManager.activatePower(playerId);
-                        player.sendMessage(Text.literal("Power activated!"), false);
-                    }
-                    return 1;
-                })
-        );
-
-        dispatcher.register(CommandManager.literal("addPowers")
-                .executes(context -> {
-                    ServerPlayerEntity player = context.getSource().getPlayer();
-                    if (player != null) {
-                        UUID playerId = player.getUuid();
-                        Power speedBoost = new Power("Speed Boost", 60, "Gives the player a speed boost for 10 seconds");
-                        Power strengthBoost = new Power("Strength Boost", 120, "Gives the player a strength boost for 10 seconds");
-                        Power healing = new Power("Healing", 180, "Heals the player to full health");
-                        powerManager.addPower(playerId, speedBoost);
-                        powerManager.addPower(playerId, strengthBoost);
-                        powerManager.addPower(playerId, healing);
-                        player.sendMessage(Text.literal("Powers added!"), false);
-                    }
-                    return 1;
-                })
-        );
+    private void onServerStarting(MinecraftServer server) {
+        LOGGER.info("Server starting - initializing systems");
+        PowerSystem.initialize();
+        TrustSystem.initialize();
     }
 
-    private void startPlusS2(ServerCommandSource source, int durationMinutes) {
-        // Existing implementation for plusS2 command
+    private void onServerStopped(MinecraftServer server) {
+        LOGGER.info("Server stopping - cleaning up systems");
+        PowerSystem.cleanup();
+        TrustSystem.cleanup();
+        PowerDatabase.close();
     }
 
-    private void startPlusMidS2(ServerCommandSource source) {
-        // Existing implementation for PlusMidS2 command
+    private void onServerTick(MinecraftServer server) {
+        PowerSystem.tick();
+        TrustSystem.tick();
     }
-
-    private void startPlusEventMidS2(ServerCommandSource source) {
-        // Existing implementation for PlusEventMidS2 command
-    }
-
-    private void startPlusEndFight(ServerCommandSource source) {
-        // Existing implementation for PlusEndFight command
-    }
-}
+} 

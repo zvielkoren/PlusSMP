@@ -1,0 +1,91 @@
+package com.zvicraft.animation;
+
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+
+public class AnimationSystem {
+    public static void playPowerPreparationAnimation(PlayerEntity player) {
+        World world = player.getWorld();
+        Vec3d pos = player.getPos();
+        
+        if (world instanceof ServerWorld serverWorld) {
+            // Glow effect
+            serverWorld.spawnParticles(
+                ParticleTypes.GLOW,
+                pos.x, pos.y + 1.5, pos.z,
+                20, 0.5, 0.5, 0.5, 0.1
+            );
+            
+            // Preparation ring
+            for (int i = 0; i < 360; i += 10) {
+                double angle = Math.toRadians(i);
+                double x = pos.x + Math.cos(angle) * 2;
+                double z = pos.z + Math.sin(angle) * 2;
+                serverWorld.spawnParticles(
+                    ParticleTypes.END_ROD,
+                    x, pos.y, z,
+                    1, 0, 0, 0, 0
+                );
+            }
+        }
+    }
+
+    public static void playPowerActivationAnimation(PlayerEntity player, String powerName) {
+        World world = player.getWorld();
+        Vec3d pos = player.getPos();
+        
+        if (world instanceof ServerWorld serverWorld) {
+            // Burst effect
+            serverWorld.spawnParticles(
+                ParticleTypes.TOTEM_OF_UNDYING,
+                pos.x, pos.y + 1, pos.z,
+                50, 1, 1, 1, 0.5
+            );
+            
+            // Power-specific effects
+            switch (powerName) {
+                case "Emerald Effect" -> playEmeraldEffect(serverWorld, pos);
+                case "Army of Dogs" -> playDogSummonEffect(serverWorld, pos);
+                case "Fire Resistance Effect" -> playFireResistanceEffect(serverWorld, pos);
+                // Add more power-specific effects here
+            }
+        }
+    }
+
+    private static void playEmeraldEffect(ServerWorld world, Vec3d pos) {
+        world.spawnParticles(
+            ParticleTypes.EFFECT,
+            pos.x, pos.y + 1, pos.z,
+            30, 0.5, 0.5, 0.5, 0.2
+        );
+    }
+
+    private static void playDogSummonEffect(ServerWorld world, Vec3d pos) {
+        for (int i = 0; i < 10; i++) {
+            double angle = Math.toRadians(i * 36);
+            double x = pos.x + Math.cos(angle) * 2;
+            double z = pos.z + Math.sin(angle) * 2;
+            world.spawnParticles(
+                ParticleTypes.SOUL,
+                x, pos.y, z,
+                5, 0.2, 0.2, 0.2, 0.1
+            );
+        }
+    }
+
+    private static void playFireResistanceEffect(ServerWorld world, Vec3d pos) {
+        world.spawnParticles(
+            ParticleTypes.FLAME,
+            pos.x, pos.y + 1, pos.z,
+            20, 0.5, 0.5, 0.5, 0.1
+        );
+        world.spawnParticles(
+            ParticleTypes.LAVA,
+            pos.x, pos.y, pos.z,
+            10, 0.3, 0.3, 0.3, 0.1
+        );
+    }
+} 

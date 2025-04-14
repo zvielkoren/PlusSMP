@@ -1,0 +1,50 @@
+package com.zvicraft;
+
+import com.zvicraft.block.ModBlocks;
+import com.zvicraft.item.ModItems;
+import com.zvicraft.command.TrustCommand;
+import com.zvicraft.command.KeyBindingCommand;
+import com.zvicraft.database.PowerDatabase;
+import com.zvicraft.power.PowerSystem;
+import com.zvicraft.network.KeyBindingSync;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.server.network.ServerPlayerEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class PlusSMP implements ModInitializer {
+    public static final String MOD_ID = "plussmp";
+    public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
+
+    @Override
+    public void onInitialize() {
+        LOGGER.info("Initializing PlusSMP");
+        
+        // Initialize database
+        PowerDatabase.initialize();
+        
+        // Register blocks and items
+        ModBlocks.registerModBlocks();
+        ModItems.registerModItems();
+
+        // Register commands
+        CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+            TrustCommand.register(dispatcher);
+        });
+
+        // Register server tick event for power system
+        ServerTickEvents.END_SERVER_TICK.register(server -> {
+            PowerSystem.tick();
+        });
+
+        // Register player join event
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            ServerPlayerEntity player = handler.player;
+            PowerDatabase.loadPlayerPowers(player);
+        });
+    }
+} 
