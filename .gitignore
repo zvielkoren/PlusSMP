@@ -15,7 +15,7 @@ classes/
 *.iml
 *.ipr
 *.iws
-scripts/
+
 # vscode
 
 .settings/
@@ -38,3 +38,15 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# scripts
+
+scripts/*
+
+# mods
+
+mods/
+
+# config
+
+config/
