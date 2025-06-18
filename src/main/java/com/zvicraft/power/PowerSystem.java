@@ -1,27 +1,87 @@
 package com.zvicraft.power;
 
 import com.zvicraft.animation.AnimationSystem;
+import com.zvicraft.database.PowerDatabase;
 import com.zvicraft.effect.PowerEffects;
-import net.minecraft.entity.player.PlayerEntity;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.Registries;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-import java.util.List;
-import java.util.ArrayList;
+
+import java.util.*;
 
 public class PowerSystem {
     private static final Map<UUID, List<PowerData>> playerPowers = new HashMap<>();
     private static final int MAX_ACTIVE_POWERS = 2;
-    private static final int PREPARATION_TIME = 120; // 2 minutes in seconds
+    private static final int PREPARATION_TIME = 60; // 1 minute in seconds
+    private static final Map<UUID, Boolean> firstJoinPlayers = new HashMap<>();
 
+public enum SetPowerStatus {
+    SUCCESS,
+    NO_EMPTY_SLOT,
+    INVALID_SLOT
+}
+
+public static class SetPowerResult {
+    public final SetPowerStatus status;
+    public final int slot;
+
+    public SetPowerResult(SetPowerStatus status, int slot) {
+        this.status = status;
+        this.slot = slot;
+    }
+}
+
+public static SetPowerResult setPowerInNextSlot(ServerPlayerEntity player, PowerType powerType, Integer specifiedSlot) {
+    UUID playerId = player.getUuid();
+    List<PowerData> powers = playerPowers.computeIfAbsent(playerId, k -> new ArrayList<>());
+    
+    int targetSlot;
+    
+    if (specifiedSlot != null) {
+        // Use specified slot
+        targetSlot = specifiedSlot;
+        if (targetSlot < 1 || targetSlot > MAX_ACTIVE_POWERS) {
+            return new SetPowerResult(SetPowerStatus.INVALID_SLOT, -1);
+        }
+    } else {
+        // Find first empty slot
+        targetSlot = findEmptySlot(powers);
+        if (targetSlot == -1) {
+            return new SetPowerResult(SetPowerStatus.NO_EMPTY_SLOT, -1);
+        }
+    }
+    
+    // Ensure the list has enough slots
+    while (powers.size() < targetSlot) {
+        powers.add(null);
+    }
+    
+    // Set the power in the target slot
+    powers.set(targetSlot - 1, new PowerData(powerType, System.currentTimeMillis()));
+    
+    // Save to database
+    PowerType power1 = powers.size() >= 1 ? (powers.get(0) != null ? powers.get(0).powerType : null) : null;
+    PowerType power2 = powers.size() >= 2 ? (powers.get(1) != null ? powers.get(1).powerType : null) : null;
+    PowerDatabase.savePlayerPowers(player, power1, power2);
+    
+    player.sendMessage(Text.of("Started preparing " + powerType.getName() + " power in slot " + targetSlot + "..."));
+    AnimationSystem.playPowerPreparationAnimation(player);
+    
+    return new SetPowerResult(SetPowerStatus.SUCCESS, targetSlot);
+}
+
+private static int findEmptySlot(List<PowerData> powers) {
+    for (int i = 0; i < MAX_ACTIVE_POWERS; i++) {
+        if (powers.size() <= i || powers.get(i) == null) {
+            return i + 1;
+        }
+    }
+    return -1;
+}
     public static void initialize() {
         // Initialize any required resources
         playerPowers.clear();
+
     }
 
     public static void cleanup() {
@@ -87,7 +147,7 @@ public class PowerSystem {
         return (int) powers.stream().filter(data -> data.isActive).count();
     }
 
-    public static PowerData getPowerInSlot(UUID playerId, int slot) {
+    public static PowerData getPowerInSlot(ServerPlayerEntity playerId, int slot) {
         List<PowerData> powers = playerPowers.get(playerId);
         if (powers == null || powers.size() < slot) return null;
         return powers.get(slot - 1);
@@ -133,4 +193,19 @@ public class PowerSystem {
         // This is a placeholder - you'll need to implement proper player lookup
         return null;
     }
-} 
+
+public static PowerType getRandomPower() {
+    PowerType[] powers = PowerType.values();
+    int randomIndex = (int) (Math.random() * powers.length);
+    return powers[randomIndex];
+}
+
+public static void giveRandomPowerOnJoin(ServerPlayerEntity player) {
+    UUID playerId = player.getUuid();
+    if (!firstJoinPlayers.containsKey(playerId)) {
+        PowerType randomPower = getRandomPower();
+        startPowerPreparation(player, randomPower);
+        firstJoinPlayers.put(playerId, true);
+    }
+}
+}

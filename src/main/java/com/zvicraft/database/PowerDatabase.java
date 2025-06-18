@@ -57,6 +57,11 @@ public class PowerDatabase {
                 "key1 INTEGER," +
                 "key2 INTEGER" +
                 ")");
+
+            // Create first_join table
+            stmt.execute("CREATE TABLE IF NOT EXISTS first_join (" +
+                "player_uuid TEXT PRIMARY KEY" +
+                ")");
         }
     }
 
@@ -152,4 +157,32 @@ public class PowerDatabase {
             }
         }
     }
-} 
+
+    public static boolean isFirstJoin(UUID playerId) {
+        try {
+            verifyConnection();
+            try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT player_uuid FROM first_join WHERE player_uuid = ?")) {
+                stmt.setString(1, playerId.toString());
+                ResultSet rs = stmt.executeQuery();
+                return !rs.next(); // If no record exists, it's first join
+            }
+        } catch (SQLException e) {
+            System.err.println("Failed to check first join status: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public static void markFirstJoin(UUID playerId) {
+        try {
+            verifyConnection();
+            try (PreparedStatement stmt = connection.prepareStatement(
+                "INSERT INTO first_join (player_uuid) VALUES (?)")) {
+            stmt.setString(1, playerId.toString());
+            stmt.executeUpdate();
+        }
+        } catch (SQLException e) {
+            System.err.println("Failed to mark first join: " + e.getMessage());
+        }
+    }
+}

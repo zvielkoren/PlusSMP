@@ -1,12 +1,14 @@
 package com.zvicraft.animation;
 
+import com.zvicraft.entity.boss.PlusBossEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
-public class AnimationSystem {
+public abstract class AnimationSystem {
     public static void playPowerPreparationAnimation(PlayerEntity player) {
         World world = player.getWorld();
         Vec3d pos = player.getPos();
@@ -88,4 +90,10 @@ public class AnimationSystem {
             10, 0.3, 0.3, 0.3, 0.1
         );
     }
-} 
+
+    public abstract Identifier getModelResource(PlusBossEntity entity);
+
+    public abstract Identifier getTextureResource(PlusBossEntity entity);
+
+    public abstract Identifier getAnimationResource(PlusBossEntity entity);
+}

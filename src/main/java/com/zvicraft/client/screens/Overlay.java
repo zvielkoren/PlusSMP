@@ -32,10 +32,9 @@ public class Overlay {
             // Resource location for the slot texture
             Identifier texture = Identifier.of("plussmp", "textures/screens/empty-slot.png");
 
-            // Draw two inventory slot icons
-            drawContext.drawTexture(texture, baseX,
-                    baseY, 0, 0, slotSize, slotSize, slotSize, slotSize);
-            drawContext.drawTexture(texture, baseX + slotSize + spacing, baseY, 0, 0, slotSize, slotSize, slotSize, slotSize);
+//            // Draw two inventory slot icons
+//            drawContext.drawTexture(texture, );
+//            drawContext.drawTexture(texture, baseX + slotSize + spacing, baseY, 0, 0, slotSize, slotSize, slotSize, slotSize);
         });
     }
 }
