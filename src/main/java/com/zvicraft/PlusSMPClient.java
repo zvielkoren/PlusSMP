@@ -2,13 +2,11 @@ package com.zvicraft;
 
 import com.zvicraft.client.ClientKeyHandler;
 import com.zvicraft.discord.DiscordIntegration;
-import com.zvicraft.entity.boss.PlusBossRenderer;
 import com.zvicraft.keybinding.KeyBindingHandler;
 import com.zvicraft.keybinding.KeyBindings;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import com.zvicraft.entity.boss.PlusBossRenderer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 

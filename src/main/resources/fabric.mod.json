@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "plussmp",
-  "version": "${version}",
+  "version": "1.0.0",
   "name": "PlusSMP",
   "description": "PlusSMP Mod - A unique SMP experience with custom powers and features",
   "authors": ["ZviCraft"],

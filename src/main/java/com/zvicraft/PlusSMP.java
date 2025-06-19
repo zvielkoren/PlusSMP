@@ -6,7 +6,6 @@ import com.zvicraft.command.PowerCommand;
 import com.zvicraft.command.TrustCommand;
 import com.zvicraft.database.PowerDatabase;
 import com.zvicraft.effect.ActivePowerTracker;
-import com.zvicraft.entity.boss.PlusBossEntity;
 import com.zvicraft.networking.NetworkHandler;
 import com.zvicraft.power.PowerEvents;
 import com.zvicraft.power.PowerSystem;
@@ -20,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
-import static com.zvicraft.entity.ModEntities.BOSS;
 
 
 public class PlusSMP implements ModInitializer {
@@ -34,7 +32,6 @@ public class PlusSMP implements ModInitializer {
         LOGGER.info("Initializing PlusSMP Mod");
 
         // שלב 1: רשום את היישות קודם!
-        com.zvicraft.entity.ModEntities.init();
 
         // שלב 2: רשום פריטים (כולל SpawnEgg שמצביע ל־BOSS)
 //        ModItems.registerModItems();
@@ -43,7 +40,6 @@ public class PlusSMP implements ModInitializer {
         NetworkHandler.register();
 
         // שלב 3: רשום תכונות ברירת מחדל
-        FabricDefaultAttributeRegistry.register(BOSS, PlusBossEntity.createBossAttributes());
 
         // Initialize database
         PowerDatabase.initialize();

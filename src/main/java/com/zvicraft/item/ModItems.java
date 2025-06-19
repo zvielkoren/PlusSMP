@@ -1,7 +1,6 @@
 package com.zvicraft.item;
 
 import com.zvicraft.PlusSMP;
-import com.zvicraft.entity.ModEntities;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroups;
@@ -16,14 +15,14 @@ public class ModItems {
 
     public static void registerModItems() {
         POWER_TYPE = registerItem("power_type", new Item(new Item.Settings()));
-
-        PLUS_BOSS_SPAWN_EGG = registerItem("plus_boss_spawn_egg",
-                new SpawnEggItem(ModEntities.BOSS, new Item.Settings()));
-
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INVENTORY).register(entries -> {
-            entries.add(POWER_TYPE);
-            entries.add(PLUS_BOSS_SPAWN_EGG);
-        });
+//
+//        PLUS_BOSS_SPAWN_EGG = registerItem("plus_boss_spawn_egg",
+//                new SpawnEggItem(ModEntities.BOSS, new Item.Settings()))
+//
+//        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INVENTORY).register(entries -> {
+//            entries.add(POWER_TYPE);
+//            entries.add(PLUS_BOSS_SPAWN_EGG);
+//        });
 
         System.out.println("Registered Mod Items for " + PlusSMP.MOD_ID);
     }

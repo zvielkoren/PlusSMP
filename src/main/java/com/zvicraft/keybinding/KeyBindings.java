@@ -28,31 +28,6 @@ public class KeyBindings {
                 CATEGORY
         ));
     }
-
-    // Add this method to check if keybinds are pressed
-    public static void handleKeyPresses() {
-        if (POWER_1_KEY.wasPressed()) {
-            // Handle power 1 activation
-            onPower1Pressed();
-        }
-
-        if (POWER_2_KEY.wasPressed()) {
-            // Handle power 2 activation
-            onPower2Pressed();
-        }
-    }
-
-    // Add these methods to handle the actual functionality
-    private static void onPower1Pressed() {
-        // Add your power 1 logic here
-        System.out.println("Power 1 activated!");
-    }
-
-    private static void onPower2Pressed() {
-        // Add your power 2 logic here
-        System.out.println("Power 2 activated!");
-    }
-
     public static void updateKeyBinding(int slot, int keyCode) {
         // Proper client-side check
         if (!FabricLoader.getInstance().getEnvironmentType().equals(EnvType.CLIENT)) {

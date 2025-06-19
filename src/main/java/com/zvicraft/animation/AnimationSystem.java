@@ -1,6 +1,5 @@
 package com.zvicraft.animation;
 
-import com.zvicraft.entity.boss.PlusBossEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -91,9 +90,5 @@ public abstract class AnimationSystem {
         );
     }
 
-    public abstract Identifier getModelResource(PlusBossEntity entity);
 
-    public abstract Identifier getTextureResource(PlusBossEntity entity);
-
-    public abstract Identifier getAnimationResource(PlusBossEntity entity);
 }
