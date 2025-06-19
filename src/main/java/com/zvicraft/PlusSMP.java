@@ -5,6 +5,7 @@ import com.zvicraft.command.KeyBindingCommand;
 import com.zvicraft.command.PowerCommand;
 import com.zvicraft.command.TrustCommand;
 import com.zvicraft.database.PowerDatabase;
+import com.zvicraft.effect.ActivePowerTracker;
 import com.zvicraft.entity.boss.PlusBossEntity;
 import com.zvicraft.networking.NetworkHandler;
 import com.zvicraft.power.PowerEvents;
@@ -80,6 +81,9 @@ public class PlusSMP implements ModInitializer {
     private void onServerTick(MinecraftServer server) {
         PowerSystem.tick();
         TrustSystem.tick();
+        ActivePowerTracker.tick();
+
     }
+
 
 } 

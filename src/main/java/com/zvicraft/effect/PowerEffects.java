@@ -1,178 +1,184 @@
 package com.zvicraft.effect;
 
+import com.zvicraft.power.PowerType;  // Add this line
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.effect.StatusEffectInstance;
 import net.minecraft.entity.effect.StatusEffects;
+import net.minecraft.entity.passive.WolfEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
+import net.minecraft.registry.Registries;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PowerEffects {
-    public static void applyPowerEffect(PlayerEntity player, String powerName) {
+    public static void applyPowerEffect(PlayerEntity player, PowerType powerType) {
         if (player instanceof ServerPlayerEntity serverPlayer) {
-            switch (powerName) {
-                case "Emerald Effect" -> applyEmeraldEffect(serverPlayer);
-                case "Army of Dogs" -> applyDogEffect(serverPlayer);
-                case "Fire Resistance Effect" -> applyFireResistanceEffect(serverPlayer);
-                case "Shield Effect" -> applyShieldEffect(serverPlayer);
-                case "Totem Effect" -> applyTotemEffect(serverPlayer);
-                case "Creeper Effect" -> applyCreeperEffect(serverPlayer);
-                case "Poison Effect" -> applyPoisonEffect(serverPlayer);
-                case "Vex Summon" -> applyVexEffect(serverPlayer);
-                case "Trident Power" -> applyTridentEffect(serverPlayer);
-                case "Dolphin Power" -> applyDolphinEffect(serverPlayer);
-                case "Grappling Power" -> applyGrapplingEffect(serverPlayer);
-                case "Confuse Power" -> applyConfuseEffect(serverPlayer);
-                case "Pearl Power" -> applyPearlEffect(serverPlayer);
-                case "Lifesteal Power" -> applyLifestealEffect(serverPlayer);
-                case "Heart Power" -> applyHeartEffect(serverPlayer);
-                case "Thunder Power" -> applyThunderEffect(serverPlayer);
-                case "Piercing Power" -> applyPiercingEffect(serverPlayer);
-                case "Mace Power" -> applyMaceEffect(serverPlayer);
-                case "Trapper Power" -> applyTrapperEffect(serverPlayer);
-                case "Underground Power" -> applyUndergroundEffect(serverPlayer);
-                case "Invisibility Power" -> applyInvisibilityEffect(serverPlayer);
-                case "Shrink Power" -> applyShrinkEffect(serverPlayer);
-                case "CobWeb Power" -> applyCobwebEffect(serverPlayer);
+            switch (powerType) {
+                case SPEED -> applySpeedEffect(serverPlayer);
+                case DOGS -> applyDogsEffect(serverPlayer);
+                case BLINDNESS -> applyBlindnessEffect(serverPlayer);
+                case CAGE -> applyCageEffect(serverPlayer);
+                case EMERALD -> applyEmeraldEffect(serverPlayer);
+                case IMMUNITY -> applyImmunityEffect(serverPlayer);
+                case CREEPER -> applyCreeperEffect(serverPlayer);
+                case POISON -> applyPoisonEffect(serverPlayer);
+                case TOTEM -> applyTotemEffect(serverPlayer);
+                case VEX -> applyVexEffect(serverPlayer);
+                case DOLPHIN -> applyDolphinEffect(serverPlayer);
+                case GRAPPLING -> applyGrapplingEffect(serverPlayer);
+                case PEARL -> applyPearlEffect(serverPlayer);
+                case LIFESTEAL -> applyLifestealEffect(serverPlayer);
+                case HEART -> applyHeartEffect(serverPlayer);
+                case SHIELD_PIERCING -> applyShieldPiercingEffect(serverPlayer);
+                case SHRINK -> applyShrinkEffect(serverPlayer);
+                case COBWEB -> applyCobwebEffect(serverPlayer);
+                case MACE -> applyMaceEffect(serverPlayer);
             }
         }
     }
 
-    private static void applyEmeraldEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.HERO_OF_THE_VILLAGE, Integer.MAX_VALUE, 2, false, false
-        ));
+    private static void applyMaceEffect(ServerPlayerEntity serverPlayer) {
+
     }
 
-    private static void applyDogEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.RESISTANCE, Integer.MAX_VALUE, 1, false, false
-        ));
+    private static void applyCobwebEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyFireResistanceEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.FIRE_RESISTANCE, Integer.MAX_VALUE, 0, false, false
-        ));
+    private static void applyShrinkEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyShieldEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.RESISTANCE, Integer.MAX_VALUE, 2, false, false
-        ));
+    private static void applyShieldPiercingEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyTotemEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.REGENERATION, Integer.MAX_VALUE, 1, false, false
-        ));
+    private static void applyHeartEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyCreeperEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.STRENGTH, 20 * 7, 1, false, false
-        ));
+    private static void applyLifestealEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyPoisonEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.POISON, 20 * 10, 0, false, false
-        ));
+    private static void applyPearlEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyVexEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.STRENGTH, 20 * 20, 1, false, false
-        ));
+    private static void applyGrapplingEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyTridentEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.CONDUIT_POWER, 20 * 10, 0, false, false
-        ));
+    private static void applyDolphinEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyDolphinEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.DOLPHINS_GRACE, 20 * 10, 0, false, false
-        ));
+    private static void applyVexEffect(ServerPlayerEntity serverPlayer) {
+
     }
 
-    private static void applyGrapplingEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.SLOW_FALLING, 20 * 5, 0, false, false
-        ));
+    private static void applyTotemEffect(ServerPlayerEntity serverPlayer) {
+        }
+
+    private static void applyPoisonEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyConfuseEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.BLINDNESS, 20 * 5, 0, false, false
-        ));
+    private static void applyCreeperEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyPearlEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.SPEED, 20 * 30, 1, false, false
-        ));
+    private static void applyImmunityEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyLifestealEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.ABSORPTION, 20 * 10, 1, false, false
-        ));
+    private static void applyEmeraldEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyHeartEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.REGENERATION, Integer.MAX_VALUE, 0, false, false
-        ));
+    private static void applyCageEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyThunderEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.STRENGTH, 20 * 10, 2, false, false
-        ));
+    private static void applyBlindnessEffect(ServerPlayerEntity serverPlayer) {
     }
 
-    private static void applyPiercingEffect(ServerPlayerEntity player) {
+    private static void applySpeedEffect(ServerPlayerEntity player) {
         player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.STRENGTH, 20 * 10, 1, false, false
+            StatusEffects.SPEED, Integer.MAX_VALUE, 0, false, false
         ));
+        // Additional boost effect when activated
+        player.addStatusEffect(new StatusEffectInstance(
+            StatusEffects.SPEED, 20 * 5, 1, false, false
+        ));
+        // Launch player forward
+        Vec3d lookDir = player.getRotationVector();
+        player.addVelocity(lookDir.x * 1.5, 0.2, lookDir.z * 1.5);
     }
 
-    private static void applyMaceEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.STRENGTH, 20 * 10, 1, false, false
-        ));
+private static void applyDogsEffect(ServerPlayerEntity player) {
+    ServerWorld world = player.getServerWorld();
+    ActivePowerTracker.trackPowerEffect(player); // Start tracking this power effect
+
+    for (int i = 0; i < 5; i++) {
+        WolfEntity wolf = (WolfEntity) EntityType.WOLF.create(world, null);
+        if (wolf != null) {
+            wolf.setPos(player.getX(), player.getY(), player.getZ());
+            wolf.setTamed(true, true);
+            wolf.setOwner(player);
+            
+            StatusEffectInstance speedEffect = new StatusEffectInstance(StatusEffects.SPEED, 20 * 60, 0);
+            StatusEffectInstance fireResistanceEffect = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 20 * 60, 0);
+            StatusEffectInstance strengthEffect = new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 60, 1);
+            equipWolfArmor(wolf);
+            wolf.addStatusEffect(speedEffect);
+            wolf.addStatusEffect(fireResistanceEffect);
+            wolf.addStatusEffect(strengthEffect);
+            
+            world.spawnEntity(wolf);
+            
+            // Track the spawned wolf
+            ActivePowerTracker.trackSpawnedEntity(player, wolf);
+        }
+    }
+}
+    private static void equipWolfArmor(WolfEntity wolf) {
+        // Create diamond armor items
+        ItemStack helmet = new ItemStack(Items.WOLF_ARMOR);
+        ItemStack chestplate = new ItemStack(Items.WOLF_ARMOR);
+        ItemStack leggings = new ItemStack(Items.WOLF_ARMOR);
+        ItemStack boots = new ItemStack(Items.WOLF_ARMOR);
+
+        // Enchant the armor (optional)
+//        enchantArmor(helmet);
+//        enchantArmor(chestplate);
+//        enchantArmor(leggings);
+//        enchantArmor(boots);
+
+        // Equip the armor to the wolf
+        wolf.equipStack(EquipmentSlot.HEAD, helmet);
+        wolf.equipStack(EquipmentSlot.CHEST, chestplate);
+        wolf.equipStack(EquipmentSlot.LEGS, leggings);
+        wolf.equipStack(EquipmentSlot.FEET, boots); 
+
+        // Set equipment drop chances to 0 so the armor doesn't drop when the wolf despawns
+        wolf.setEquipmentDropChance(EquipmentSlot.HEAD, 0.0F);
+        wolf.setEquipmentDropChance(EquipmentSlot.CHEST, 0.0F);
+        wolf.setEquipmentDropChance(EquipmentSlot.LEGS, 0.0F);
+        wolf.setEquipmentDropChance(EquipmentSlot.FEET, 0.0F);
     }
 
-    private static void applyTrapperEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.SLOWNESS, 20 * 4, 3, false, false
-        ));
-    }
+//    private static void enchantArmor(ItemStack armor) {
+//        armor.addEnchantment(Enchantments.PROTECTION, 4);
+//        armor.addEnchantment(Enchantments.UNBREAKING, 3);
+//        armor.addEnchantment(Enchantments.THORNS, 3);
+//
+//        if (armor.isOf(Items.DIAMOND_BOOTS) || armor.isOf(Items.NETHERITE_BOOTS)) {
+//            armor.addEnchantment(Enchantments.FEATHER_FALLING, 4);
+//            armor.addEnchantment(Enchantments.DEPTH_STRIDER, 3);
+//        }
+//    }
 
-    private static void applyUndergroundEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.NIGHT_VISION, 20 * 30, 0, false, false
-        ));
-    }
 
-    private static void applyInvisibilityEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.INVISIBILITY, Integer.MAX_VALUE, 0, false, false
-        ));
-    }
 
-    private static void applyShrinkEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.SLOWNESS, 20 * 7, 2, false, false
-        ));
-    }
-
-    private static void applyCobwebEffect(ServerPlayerEntity player) {
-        player.addStatusEffect(new StatusEffectInstance(
-            StatusEffects.SLOWNESS, 20 * 3, 4, false, false
-        ));
-    }
-} 
+    // Add implementations for other effects...
+}

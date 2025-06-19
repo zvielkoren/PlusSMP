@@ -15,7 +15,24 @@ public class PowerSystem {
     private static final int PREPARATION_TIME = 60; // 1 minute in seconds
     private static final Map<UUID, Boolean> firstJoinPlayers = new HashMap<>();
 
-public enum SetPowerStatus {
+    public static void initializePlayerPowers(ServerPlayerEntity player) {
+        UUID playerId = player.getUuid();
+        playerPowers.computeIfAbsent(playerId, k -> new ArrayList<>());
+    }
+
+    public static void loadPlayerPowers(ServerPlayerEntity player) {
+        // וודא שהשחקן מאותחל לפני טעינה
+        if (!isPlayerInitialized(player)) {
+            initializePlayerPowers(player);
+        }
+    }
+
+    private static boolean isPlayerInitialized(ServerPlayerEntity player) {
+        UUID playerId = player.getUuid();
+        return playerPowers.containsKey(playerId);
+    }
+
+    public enum SetPowerStatus {
     SUCCESS,
     NO_EMPTY_SLOT,
     INVALID_SLOT
@@ -147,15 +164,27 @@ private static int findEmptySlot(List<PowerData> powers) {
         return (int) powers.stream().filter(data -> data.isActive).count();
     }
 
-    public static PowerData getPowerInSlot(ServerPlayerEntity playerId, int slot) {
-        List<PowerData> powers = playerPowers.get(playerId);
-        if (powers == null || powers.size() < slot) return null;
-        return powers.get(slot - 1);
+public static PowerData getPowerInSlot(ServerPlayerEntity player, int slot) {
+    List<PowerData> powers = playerPowers.get(player.getUuid());
+    if (powers == null || powers.size() < slot) {
+        System.out.println("No active power found in slot " + slot + " for player " + 
+                         player.getName().getString());
+        return null;
     }
+    PowerData power = powers.get(slot - 1);
+    if (power == null) {
+        System.out.println("Empty power slot " + slot + " for player " + 
+                         player.getName().getString());
+    } else {
+        System.out.println("Found power " + power.powerType.getName() + " in slot " + 
+                         slot + " for player " + player.getName().getString());
+    }
+    return power;
+}
 
     public static void activatePower(ServerPlayerEntity player, PowerData powerData) {
         long currentTime = System.currentTimeMillis();
-        long cooldown = powerData.powerType.getCooldown() * 1000L;
+        long cooldown = powerData.powerType.getCooldownSeconds() * 1000L;
         
         if (currentTime - powerData.lastActivationTime < cooldown) {
             long remaining = (cooldown - (currentTime - powerData.lastActivationTime)) / 1000;
@@ -165,7 +194,7 @@ private static int findEmptySlot(List<PowerData> powers) {
         
         powerData.lastActivationTime = currentTime;
         AnimationSystem.playPowerActivationAnimation(player, powerData.powerType.getName());
-        PowerEffects.applyPowerEffect(player, powerData.powerType.getName());
+        PowerEffects.applyPowerEffect(player, powerData.powerType);
         
         player.sendMessage(Text.of("Activated " + powerData.powerType.getName() + "!"));
     }
@@ -182,7 +211,7 @@ private static int findEmptySlot(List<PowerData> powers) {
                     if (player != null) {
                         player.sendMessage(Text.of("Power " + data.powerType.getName() + " is now active!"));
                         AnimationSystem.playPowerActivationAnimation(player, data.powerType.getName());
-                        PowerEffects.applyPowerEffect(player, data.powerType.getName());
+                        PowerEffects.applyPowerEffect(player, data.powerType);
                     }
                 }
             });
@@ -204,7 +233,7 @@ public static void giveRandomPowerOnJoin(ServerPlayerEntity player) {
     UUID playerId = player.getUuid();
     if (!firstJoinPlayers.containsKey(playerId)) {
         PowerType randomPower = getRandomPower();
-        startPowerPreparation(player, randomPower);
+        setPowerInNextSlot(player, randomPower, 1); // Use slot 1 for first power
         firstJoinPlayers.put(playerId, true);
     }
 }

@@ -50,7 +50,7 @@ public class PowerCommand {
                 case SUCCESS:
                     context.getSource().sendMessage(Text.of("Successfully set " + powerType.getName() + 
                         " in slot " + result.slot + " for " + player.getName().getString()));
-                    return 1;
+                    return   1;
                 case NO_EMPTY_SLOT:
                     context.getSource().sendMessage(Text.of("No empty slots available for " + 
                         player.getName().getString()));
