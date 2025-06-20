@@ -36,13 +36,27 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// GeckoLib
-	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+//	modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
 
-	include "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
-	implementation 'com.github.Vatuu:discord-rpc:1.6.2'
-
-	implementation 'net.java.dev.jna:jna:5.17.0'
-	implementation 'net.java.dev.jna:jna-platform:5.17.0'
+//	include "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
+// Use a more compatible version of Discord RPC
+	implementation ('com.github.Vatuu:discord-rpc:1.6.2')
+	
+	// Exclude JNA from all configurations to prevent conflicts
+	configurations.configureEach {
+		exclude group: 'net.java.dev.jna', module: 'jna'
+		exclude group: 'net.java.dev.jna', module: 'jna-platform'
+	}
+	
+	// Add JNA dependencies with specific version that works with Minecraft
+	implementation 'net.java.dev.jna:jna:5.13.0'
+	implementation 'net.java.dev.jna:jna-platform:5.13.0'
+	
+	// Force all JNA dependencies to use the same version
+	configurations.all {
+		resolutionStrategy.force 'net.java.dev.jna:jna:5.13.0'
+		resolutionStrategy.force 'net.java.dev.jna:jna-platform:5.13.0'
+	}
 
 	implementation 'org.xerial:sqlite-jdbc:3.50.1.0'
 	include 'org.xerial:sqlite-jdbc:3.50.1.0'

@@ -2,10 +2,6 @@ package com.zvicraft.effect;
 
 import com.zvicraft.power.PowerType;
 import net.minecraft.block.Blocks;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.PotionContentsComponent;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.effect.StatusEffect;
@@ -21,17 +17,17 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
-import net.minecraft.world.explosion.Explosion;
 import net.minecraft.registry.Registries;
 import net.minecraft.network.packet.s2c.play.EntityVelocityUpdateS2CPacket;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.UUID;
 
 public class PowerEffects {
     private static final Map<PlayerEntity, Integer> immunityHits = new HashMap<>();
@@ -40,43 +36,203 @@ public class PowerEffects {
     private static final Map<PlayerEntity, Boolean> lifestealActive = new HashMap<>();
     private static final Map<PlayerEntity, Boolean> shieldPiercingActive = new HashMap<>();
 
-    public static void applyPowerEffect(PlayerEntity player, PowerType powerType) {
-        if (player instanceof ServerPlayerEntity serverPlayer) {
-            switch (powerType) {
-                case SPEED -> applySpeedEffect(serverPlayer);
-                case DOGS -> applyDogsEffect(serverPlayer);
-                case BLINDNESS -> applyBlindnessEffect(serverPlayer);
-                case CAGE -> applyCageEffect(serverPlayer);
-                case EMERALD -> applyEmeraldEffect(serverPlayer);
-                case IMMUNITY -> applyImmunityEffect(serverPlayer);
-                case CREEPER -> applyCreeperEffect(serverPlayer);
-                case POISON -> applyPoisonEffect(serverPlayer);
-                case TOTEM -> applyTotemEffect(serverPlayer);
-                case VEX -> applyVexEffect(serverPlayer);
-                case DOLPHIN -> applyDolphinEffect(serverPlayer);
-                case GRAPPLING -> applyGrapplingEffect(serverPlayer);
-                case PEARL -> applyPearlEffect(serverPlayer);
-                case LIFESTEAL -> applyLifestealEffect(serverPlayer);
-                case HEART -> applyHeartEffect(serverPlayer);
-                case SHIELD_PIERCING -> applyShieldPiercingEffect(serverPlayer);
-                case SHRINK -> applyShrinkEffect(serverPlayer);
-                case COBWEB -> applyCobwebEffect(serverPlayer);
-                case MACE -> applyMaceEffect(serverPlayer);
+    private static final Map<UUID, Long> invisCooldowns = new HashMap<>();
+    private static final Map<UUID, Long> invisEndTimes = new HashMap<>();
+    private static final long INVIS_COOLDOWN = 90 * 1000; // 1.5 minutes in milliseconds
+    private static final long INVIS_DURATION = 7 * 1000; // 7 seconds in milliseconds
+
+    private static void applyMedicEffects(ServerPlayerEntity player) {
+        // Apply effects to self
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 1, false, false)); // Instant Health II
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 5 * 20, 2, false, false)); // Regeneration III for 5 seconds
+        player.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 3 * 20, 0, false, false)); // Resistance I for 3 seconds
+        
+        // Find trusted players within 5 blocks and apply effects to them
+        player.getWorld().getPlayers().stream()
+            .filter(otherPlayer -> otherPlayer != player) // Not the player themselves
+            .filter(otherPlayer -> otherPlayer.squaredDistanceTo(player) <= 25) // 5 blocks squared
+            .filter(otherPlayer -> {
+                // Check if players are in the same team or have a trust relationship
+                // For now, we'll apply to all players in range
+                return true;
+            })
+            .forEach(ally -> {
+                if (ally.isAlive()) {  // Only apply to living players
+                    ally.addStatusEffect(new StatusEffectInstance(StatusEffects.INSTANT_HEALTH, 1, 1, false, false));
+                    ally.addStatusEffect(new StatusEffectInstance(StatusEffects.REGENERATION, 5 * 20, 2, false, false));
+                    ally.addStatusEffect(new StatusEffectInstance(StatusEffects.RESISTANCE, 3 * 20, 0, false, false));
+                    ally.sendMessage(Text.of("You've been healed by " + player.getName().getString() + "'s Medic power!"), false);
+                }
+            });
+    }
+
+    private static void applyInvisEffect(ServerPlayerEntity player) {
+        UUID playerId = player.getUuid();
+        long currentTime = System.currentTimeMillis();
+        
+        // Check cooldown
+        if (invisCooldowns.containsKey(playerId)) {
+            long cooldownEnd = invisCooldowns.get(playerId) + INVIS_COOLDOWN;
+            if (currentTime < cooldownEnd) {
+                long remaining = (cooldownEnd - currentTime) / 1000;
+                player.sendMessage(Text.of("Invis is on cooldown! " + remaining + " seconds remaining."), false);
+                return;
             }
+        }
+        
+        // Apply medic effects to self and allies
+        applyMedicEffects(player);
+        
+        // Apply invisibility
+        StatusEffectInstance invisibility = new StatusEffectInstance(StatusEffects.INVISIBILITY, (int)(INVIS_DURATION / 50), 0, false, false);
+        player.addStatusEffect(invisibility);
+        
+        // Hide armor and items
+        player.setInvisible(true);
+        player.setGlowing(false);
+        
+        // Store end time and set cooldown
+        invisEndTimes.put(playerId, currentTime + INVIS_DURATION);
+        invisCooldowns.put(playerId, currentTime);
+        
+        // Schedule end of invisibility
+        player.getServer().execute(() -> {
+            try {
+                Thread.sleep(INVIS_DURATION);
+                player.getServer().execute(() -> {
+                    if (player.isAlive()) {
+                        player.setInvisible(false);
+                        invisEndTimes.remove(playerId);
+                    }
+                });
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        });
+        
+        player.sendMessage(Text.of("You are now invisible for 7 seconds and have been healed!"), false);
+    }
+    
+    public static boolean isInvisActive(PlayerEntity player) {
+        return invisEndTimes.containsKey(player.getUuid()) && 
+               System.currentTimeMillis() < invisEndTimes.get(player.getUuid());
+    }
+
+    public static void applyPowerEffect(ServerPlayerEntity target, PowerType powerType) {
+        if (target == null || powerType == null) return;
+
+        switch (powerType) {
+            // Self-only powers (buffs)
+            case SPEED:
+                applySpeedEffect(target);
+                break;
+            case INVISIBILITY:
+                applyInvisEffect(target);
+                break;
+            case STRENGTH:
+                applyStrengthEffect(target); // 15 seconds of Strength II
+                break;
+            case DOLPHIN:
+                applyDolphinEffect(target);
+                break;
+            case GRAPPLING:
+                applyGrapplingEffect(target);
+                break;
+            case LIFESTEAL:
+                applyLifestealEffect(target);
+                break;
+            case SHIELD_PIERCING:
+                applyShieldPiercingEffect(target);
+                break;
+                
+            // Targeted powers (can be used on self or others)
+            case POISON:
+                applyPoisonEffect(target); // 10 seconds of Poison II
+                break;
+            case WITHER:
+                applyWintherEffect(target); // 10 seconds of Poison II
+                break;
+            case BLINDNESS:
+                applyBlindnessEffect(target); // 5 seconds of Blindness I
+                break;
+            case SLOWNESS:
+                applySlownessEffect(target); // 5 seconds of Slowness II
+                break;
+            case WEAKNESS:
+                applyWeaknessEffect(target); // 10 seconds of Weakness I
+                break;
+            case COBWEB:
+                applyCobwebEffect(target);
+                break;
+            case SHRINK:
+                applyShrinkEffect(target);
+                break;
+                
+            // Special powers
+            case DOGS:
+                applyDogsEffect(target);
+                break;
+            case CAGE:
+                applyCageEffect(target);
+                break;
+            case EMERALD:
+                applyEmeraldEffect(target);
+                break;
+            case CREEPER:
+                applyCreeperEffect(target);
+                break;
+            case TOTEM:
+                applyTotemEffect(target);
+                break;
+            case VEX:
+                applyVexEffect(target);
+                break;
+            case PEARL:
+                applyPearlEffect(target);
+                break;
+            case HEART:
+                applyHeartEffect(target);
+                break;
+            case MACE:
+                applyMaceEffect(target);
+                break;
+                
+            default:
+                target.sendMessage(Text.of("Power " + powerType.getName() + " is not implemented yet!"), false);
+                break;
         }
     }
 
+    private static void applyWeaknessEffect(ServerPlayerEntity target) {
+        StatusEffectInstance weakness = new StatusEffectInstance(StatusEffects.WEAKNESS, 20 * 10, 0);
+        target.addStatusEffect(weakness);
+    }
+
+    private static void applySlownessEffect(ServerPlayerEntity target) {
+        StatusEffectInstance slowness = new StatusEffectInstance(StatusEffects.SLOWNESS, 20 * 5, 1);
+        target.addStatusEffect(slowness);
+    }
+
+    private static void applyWintherEffect(ServerPlayerEntity target) {
+        StatusEffectInstance wither = new StatusEffectInstance(StatusEffects.WITHER, 20 * 10, 0);
+        target.addStatusEffect(wither);
+    }
+
+    private static void applyStrengthEffect(ServerPlayerEntity target) {
+        StatusEffectInstance strength = new StatusEffectInstance(StatusEffects.STRENGTH, 20 * 15, 0);
+        target.addStatusEffect(strength);
+    }
+//
+//    public static void applyStatusEffect(ServerPlayerEntity target, StatusEffects effect, int duration, int amplifier) {
+//        StatusEffectInstance statusEffect = new StatusEffectInstance(effect, duration, amplifier);
+//        target.addStatusEffect(statusEffect);
+//    }
+
     private static void applySpeedEffect(ServerPlayerEntity player) {
         // Permanent Speed I
-        RegistryEntry<StatusEffect> speed = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.SPEED);
-        player.addStatusEffect(new StatusEffectInstance(
-                speed, StatusEffectInstance.INFINITE, 0, false, false
-        ));
-
-        // Temporary Speed II for 5 seconds when activated
-        player.addStatusEffect(new StatusEffectInstance(
-                speed, 20 * 5, 1, false, false
-        ));
+        StatusEffectInstance speed = new StatusEffectInstance(StatusEffects.SPEED, 20 * 15, 0);
+        player.addStatusEffect(
+                speed);
 
         // Launch player forward ~15 blocks
         Vec3d lookDir = player.getRotationVector();
@@ -88,7 +244,7 @@ public class PowerEffects {
         ServerWorld world = player.getServerWorld();
 
         for (int i = 0; i < 5; i++) {
-            WolfEntity wolf = EntityType.WOLF.create(world, null);
+            WolfEntity wolf = EntityType.WOLF.create(world);
             if (wolf != null) {
                 // Position near player
                 double angle = (2 * Math.PI * i) / 5;
@@ -99,16 +255,6 @@ public class PowerEffects {
                 // Tame to player
                 wolf.setTamed(true, true);
                 wolf.setOwner(player);
-
-                // Add effects for 1 minute
-                    RegistryEntry<StatusEffect> speed = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.SPEED);
-                    RegistryEntry<StatusEffect> fireRes = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.FIRE_RESISTANCE);
-                    RegistryEntry<StatusEffect> strength = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.STRENGTH);
-
-                wolf.addStatusEffect(new StatusEffectInstance(speed, 20 * 60, 0));
-                wolf.addStatusEffect(new StatusEffectInstance(fireRes, 20 * 60, 0));
-                wolf.addStatusEffect(new StatusEffectInstance(strength, 20 * 60, 1));
-
                 // Equip armor
                 equipWolfArmor(wolf);
 
@@ -133,11 +279,17 @@ public class PowerEffects {
 
     private static void applyBlindnessEffect(ServerPlayerEntity player) {
         // Apply Darkness and Wither for 15 seconds
-        RegistryEntry<StatusEffect> darkness = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.DARKNESS);
-        RegistryEntry<StatusEffect> wither = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.WITHER);
+        StatusEffectInstance darkness = new StatusEffectInstance(StatusEffects.DARKNESS, 200, 0);
+        StatusEffectInstance wither = new StatusEffectInstance( StatusEffects.WITHER, 200, 0);
 
-        player.addStatusEffect(new StatusEffectInstance(darkness, 20 * 15, 0));
-        player.addStatusEffect(new StatusEffectInstance(wither, 20 * 15, 0));
+        // Permanent Speed I
+        RegistryEntry<StatusEffect> speed = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.SPEED);
+        StatusEffectInstance speedEffect = new StatusEffectInstance( speed, StatusEffectInstance.INFINITE, 0, false, false
+        );
+        player.addStatusEffect(speedEffect);
+
+        player.addStatusEffect(darkness);
+        player.addStatusEffect(wither);
     }
 
     private static void applyCageEffect(ServerPlayerEntity player) {
@@ -166,9 +318,9 @@ public class PowerEffects {
     private static void applyEmeraldEffect(ServerPlayerEntity player) {
         // Permanent Hero of the Village III
         RegistryEntry<StatusEffect> hero = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.HERO_OF_THE_VILLAGE);
-        player.addStatusEffect(new StatusEffectInstance(
-                hero, StatusEffectInstance.INFINITE, 2, false, false
-        ));
+        StatusEffectInstance heroEffect = new StatusEffectInstance( hero, StatusEffectInstance.INFINITE, 0, false, false
+        );
+        player.addStatusEffect(heroEffect);
 
         // Note: Villager trading for 1 emerald would need custom villager interaction handling
         // This would require additional event listeners and custom trading logic
@@ -179,8 +331,7 @@ public class PowerEffects {
         immunityHits.put(player, 3);
 
         // Visual effect
-        RegistryEntry<StatusEffect> glowing = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.GLOWING);
-        player.addStatusEffect(new StatusEffectInstance(glowing, 20 * 50, 0));
+        player.playSound(SoundEvents.ENTITY_PLAYER_LEVELUP, 1.0f, 1.0f);
     }
 
     private static void applyCreeperEffect(ServerPlayerEntity player) {
@@ -209,26 +360,26 @@ public class PowerEffects {
         world.createExplosion(null, pos.x, pos.y, pos.z, 3.0f, World.ExplosionSourceType.TNT);
 
         // Give brief fire resistance to prevent self-damage
-        RegistryEntry<StatusEffect> fireRes = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.FIRE_RESISTANCE);
-        player.addStatusEffect(new StatusEffectInstance(fireRes, 20 * 5, 0));
+        StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 20 * 5, 0);
+        player.addStatusEffect(fireRes);
     }
 
     private static void applyPoisonEffect(ServerPlayerEntity player) {
         // Apply Poison II for 10 seconds to target
         // Note: This needs target selection logic - applying to self for now
-        RegistryEntry<StatusEffect> poison = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.POISON);
-        player.addStatusEffect(new StatusEffectInstance(poison, 20 * 10, 1));
+        StatusEffectInstance poison = new StatusEffectInstance(StatusEffects.POISON, 20 * 10, 2);
+        player.addStatusEffect(poison);
     }
 
     private static void applyTotemEffect(ServerPlayerEntity player) {
         // Apply totem effects for 15 seconds
-        RegistryEntry<StatusEffect> regen = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.REGENERATION);
-        RegistryEntry<StatusEffect> fireRes = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.FIRE_RESISTANCE);
-        RegistryEntry<StatusEffect> absorption = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.ABSORPTION);
+        StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, 20 * 15, 0);
+        StatusEffectInstance fireRes = new StatusEffectInstance(StatusEffects.FIRE_RESISTANCE, 20 * 15, 0);
+        StatusEffectInstance absorption = new StatusEffectInstance(StatusEffects.ABSORPTION, 20 * 15, 0);
 
-        player.addStatusEffect(new StatusEffectInstance(regen, 20 * 15, 1));
-        player.addStatusEffect(new StatusEffectInstance(fireRes, 20 * 15, 0));
-        player.addStatusEffect(new StatusEffectInstance(absorption, 20 * 15, 1));
+        player.addStatusEffect(regen);
+        player.addStatusEffect(fireRes);
+        player.addStatusEffect(absorption);
 
         // Play totem sound
         player.getWorld().playSound(null, player.getBlockPos(),
@@ -240,7 +391,7 @@ public class PowerEffects {
 
         // Spawn 5 vexes
         for (int i = 0; i < 5; i++) {
-            VexEntity vex = EntityType.VEX.create(world, null);
+            VexEntity vex = EntityType.VEX.create(world);
             if (vex != null) {
                 double angle = (2 * Math.PI * i) / 5;
                 double x = player.getX() + Math.cos(angle) * 3;
@@ -248,7 +399,15 @@ public class PowerEffects {
                 vex.refreshPositionAndAngles(x, player.getY() + 2, z, 0, 0);
 
                 // Set vex to attack nearby players (except owner)
+                List<PlayerEntity> nearbyPlayers = world.getEntitiesByClass(
+                        PlayerEntity.class,
+                        player.getBoundingBox().expand(10),
+                        p -> p != player
+                );
 
+                for (PlayerEntity nearbyPlayer : nearbyPlayers) {
+                    vex.setTarget(nearbyPlayer);
+                }
                 world.spawnEntity(vex);
             }
         }
@@ -257,13 +416,13 @@ public class PowerEffects {
     private static void applyDolphinEffect(ServerPlayerEntity player) {
         // Permanent water breathing
         RegistryEntry<StatusEffect> waterBreathing = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.WATER_BREATHING);
-        player.addStatusEffect(new StatusEffectInstance(
-                waterBreathing, StatusEffectInstance.INFINITE, 0, false, false
-        ));
+        StatusEffectInstance waterBreathingEffect = new StatusEffectInstance(waterBreathing, StatusEffectInstance.INFINITE, 0, false, false);
+        player.addStatusEffect(waterBreathingEffect);
 
         // Dolphin's Grace for 5 seconds when activated
-        RegistryEntry<StatusEffect> dolphinGrace = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.DOLPHINS_GRACE);
-        player.addStatusEffect(new StatusEffectInstance(dolphinGrace, 20 * 5, 0));
+        StatusEffectInstance dolphinGrace = new StatusEffectInstance(StatusEffects.DOLPHINS_GRACE, 20 * 5, 0);
+
+        player.addStatusEffect(dolphinGrace);
     }
 
     private static void applyGrapplingEffect(ServerPlayerEntity player) {
@@ -309,8 +468,8 @@ public class PowerEffects {
         lifestealActive.put(player, true);
 
         // Visual indicator
-        RegistryEntry<StatusEffect> glowing = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.GLOWING);
-        player.addStatusEffect(new StatusEffectInstance(glowing, 20 * 10, 0));
+        StatusEffectInstance glowing = new StatusEffectInstance(StatusEffects.GLOWING, 20 * 10, 0);
+        player.addStatusEffect(glowing);
 
         // Schedule removal after 10 seconds
         new Thread(() -> {
@@ -325,14 +484,12 @@ public class PowerEffects {
 
     private static void applyHeartEffect(ServerPlayerEntity player) {
         // Permanent Regeneration
-        RegistryEntry<StatusEffect> regen = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.REGENERATION);
-        player.addStatusEffect(new StatusEffectInstance(
-                regen, StatusEffectInstance.INFINITE, 0, false, false
-        ));
+        StatusEffectInstance regen = new StatusEffectInstance(StatusEffects.REGENERATION, StatusEffectInstance.INFINITE, 0);
+        player.addStatusEffect(regen);
 
         // Add 5 hearts (10 health points) for 20 seconds
-        RegistryEntry<StatusEffect> absorption = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.ABSORPTION);
-        player.addStatusEffect(new StatusEffectInstance(absorption, 20 * 20, 4));
+        StatusEffectInstance absorption = new StatusEffectInstance(StatusEffects.ABSORPTION, 20 * 20, 5);
+        player.addStatusEffect(absorption);
     }
 
     private static void applyShieldPiercingEffect(ServerPlayerEntity player) {
@@ -340,8 +497,8 @@ public class PowerEffects {
         shieldPiercingActive.put(player, true);
 
         // Visual effect
-        RegistryEntry<StatusEffect> glowing = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.GLOWING);
-        player.addStatusEffect(new StatusEffectInstance(glowing, 20 * 10, 0));
+        StatusEffectInstance glowing = new StatusEffectInstance(StatusEffects.GLOWING, 20 * 10, 0);
+        player.addStatusEffect(glowing);
 
         // Schedule removal after 10 seconds
         new Thread(() -> {
@@ -357,11 +514,12 @@ public class PowerEffects {
     private static void applyShrinkEffect(ServerPlayerEntity player) {
         // This would need a mod that supports player scaling
         // For vanilla, we can simulate with effects
-        RegistryEntry<StatusEffect> slowness = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.SLOWNESS);
-        RegistryEntry<StatusEffect> weakness = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.WEAKNESS);
 
-        player.addStatusEffect(new StatusEffectInstance(slowness, 20 * 7, 1));
-        player.addStatusEffect(new StatusEffectInstance(weakness, 20 * 7, 0));
+        StatusEffectInstance slowness = new StatusEffectInstance( StatusEffects.SLOWNESS, 200, 1);
+        StatusEffectInstance weakness = new StatusEffectInstance( StatusEffects.WEAKNESS, 200, 1);
+
+        player.addStatusEffect(slowness);
+        player.addStatusEffect(weakness) ;
 
         // Note: Actual shrinking would require additional mod support like Pehkui
     }
@@ -387,8 +545,9 @@ public class PowerEffects {
 
         if (hasMace) {
             // Apply Levitation I for 14 seconds
-            RegistryEntry<StatusEffect> levitation = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.LEVITATION);
-            player.addStatusEffect(new StatusEffectInstance(levitation, 20 * 14, 0));
+            StatusEffectInstance levitation = new StatusEffectInstance(StatusEffects.LEVITATION, 20 * 14, 0);
+
+            player.addStatusEffect(levitation);
         }
     }
 

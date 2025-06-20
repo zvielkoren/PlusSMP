@@ -6,9 +6,12 @@ import com.zvicraft.command.PowerCommand;
 import com.zvicraft.command.TrustCommand;
 import com.zvicraft.database.PowerDatabase;
 import com.zvicraft.effect.ActivePowerTracker;
+import com.zvicraft.item.ModItems;
+import com.zvicraft.item.PlayerDeathDropHandler;
 import com.zvicraft.networking.NetworkHandler;
 import com.zvicraft.power.PowerEvents;
 import com.zvicraft.power.PowerSystem;
+import com.zvicraft.item.ModItemGroups;
 import com.zvicraft.trust.TrustSystem;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
@@ -17,6 +20,7 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 
 
@@ -43,10 +47,14 @@ public class PlusSMP implements ModInitializer {
 
         // Initialize database
         PowerDatabase.initialize();
-
+        ModItems.registerModItems();
+        PlayerDeathDropHandler.register();
         // Register blocks
         ModBlocks.registerModBlocks();
-        PowerEvents.register();
+        
+        // Register item groups
+        ModItemGroups.registerItemGroups();
+        
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             PowerCommand.register(dispatcher);
@@ -63,7 +71,8 @@ public class PlusSMP implements ModInitializer {
 
     private void onServerStarting(MinecraftServer server) {
         LOGGER.info("Server starting - initializing systems");
-        PowerSystem.initialize();
+        PowerDatabase PowerDatabase = new PowerDatabase();
+        PowerSystem.initialize(server, PowerDatabase);
         TrustSystem.initialize();
     }
 

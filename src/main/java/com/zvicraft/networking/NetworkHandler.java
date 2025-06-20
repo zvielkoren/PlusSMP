@@ -4,17 +4,25 @@ import com.zvicraft.keybinding.KeyBindingHandler;
 import com.zvicraft.power.PowerSystem;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.Identifier;
 
 public class NetworkHandler {
     public static void register() {
         System.out.println("NetworkHandler registering..."); // DEBUG
 
-        // Register the payload type
+        // Register the payload types
         PayloadTypeRegistry.playC2S().register(
                 KeyBindingHandler.PowerActivationPayload.ID,
                 KeyBindingHandler.PowerActivationPayload.CODEC
         );
-        System.out.println("Payload type registered!"); // DEBUG
+        
+        PayloadTypeRegistry.playS2C().register(
+                IconChangePayload.ID,
+                IconChangePayload.CODEC
+        );
+        System.out.println("Payload types registered!"); // DEBUG
 
         // Register the packet handler
         ServerPlayNetworking.registerGlobalReceiver(
@@ -60,5 +68,9 @@ public class NetworkHandler {
                 }
         );
         System.out.println("NetworkHandler registration complete!"); // DEBUG
+    }
+    
+    public static void sendIconChange(ServerPlayerEntity player, Identifier iconTexture) {
+        ServerPlayNetworking.send(player, new IconChangePayload(iconTexture));
     }
 }
