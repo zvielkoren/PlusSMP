@@ -1,6 +1,9 @@
 name: build
 
-on: [pull_request, push]
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -30,7 +33,6 @@ jobs:
           name: Artifacts
           path: build/libs/
 
-      # Publish GitHub Release draft with artifact
       - name: Create GitHub Release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -39,7 +41,7 @@ jobs:
           name: Release ${{ github.ref_name }}
           draft: true
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
