@@ -1,0 +1,18 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "plussmp:item/power_item_base",
+    "layer1": "plussmp:item/power_item_overlay"
+  },
+  "overrides": [
+    {"predicate": {"plussmp:power_type": 0.1}, "model": "plussmp:item/power_item_speed"},
+    {"predicate": {"plussmp:power_type": 0.2}, "model": "plussmp:item/power_item_dogs"},
+    {"predicate": {"plussmp:power_type": 0.3}, "model": "plussmp:item/power_item_blindness"},
+    {"predicate": {"plussmp:power_type": 0.4}, "model": "plussmp:item/power_item_cage"},
+    {"predicate": {"plussmp:power_type": 0.5}, "model": "plussmp:item/power_item_emerald"},
+    {"predicate": {"plussmp:power_type": 0.6}, "model": "plussmp:item/power_item_immunity"},
+    {"predicate": {"plussmp:power_type": 0.7}, "model": "plussmp:item/power_item_creeper"},
+    {"predicate": {"plussmp:power_type": 0.8}, "model": "plussmp:item/power_item_poison"},
+    {"predicate": {"plussmp:power_type": 0.9}, "model": "plussmp:item/power_item_totem"}
+  ]
+}
