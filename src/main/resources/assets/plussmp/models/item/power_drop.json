@@ -1,0 +1,28 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "plussmp:item/power_drop"
+  },
+  "overrides": [
+    {"predicate": {"custom_model_data": 1}, "model": "plussmp:item/power_drop_speed"},
+    {"predicate": {"custom_model_data": 2}, "model": "plussmp:item/power_drop_dogs"},
+    {"predicate": {"custom_model_data": 3}, "model": "plussmp:item/power_drop_blindness"},
+    {"predicate": {"custom_model_data": 4}, "model": "plussmp:item/power_drop_cage"},
+    {"predicate": {"custom_model_data": 5}, "model": "plussmp:item/power_drop_emerald"},
+    {"predicate": {"custom_model_data": 6}, "model": "plussmp:item/power_drop_immunity"},
+    {"predicate": {"custom_model_data": 7}, "model": "plussmp:item/power_drop_creeper"},
+    {"predicate": {"custom_model_data": 8}, "model": "plussmp:item/power_drop_poison"},
+    {"predicate": {"custom_model_data": 9}, "model": "plussmp:item/power_drop_totem"},
+    {"predicate": {"custom_model_data": 10}, "model": "plussmp:item/power_drop_vex"},
+    {"predicate": {"custom_model_data": 11}, "model": "plussmp:item/power_drop_dolphin"},
+    {"predicate": {"custom_model_data": 12}, "model": "plussmp:item/power_drop_grappling"},
+    {"predicate": {"custom_model_data": 13}, "model": "plussmp:item/power_drop_pearl"},
+    {"predicate": {"custom_model_data": 14}, "model": "plussmp:item/power_drop_lifesteal"},
+    {"predicate": {"custom_model_data": 15}, "model": "plussmp:item/power_drop_heart"},
+    {"predicate": {"custom_model_data": 16}, "model": "plussmp:item/power_drop_shield_piercing"},
+    {"predicate": {"custom_model_data": 17}, "model": "plussmp:item/power_drop_shrink"},
+    {"predicate": {"custom_model_data": 18}, "model": "plussmp:item/power_drop_cobweb"},
+    {"predicate": {"custom_model_data": 19}, "model": "plussmp:item/power_drop_mace"},
+    {"predicate": {"custom_model_data": 20}, "model": "plussmp:item/power_drop_invis"}
+  ]
+}

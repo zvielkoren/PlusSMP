@@ -1,0 +1,69 @@
+PLUS BOSS TEXTURE GUIDE (64x64)
+
+1. BODY SECTION (0,0 to 16,12)
+   - Background Gradient:
+     * Rows 0-3: #6A1B9A
+     * Rows 4-8: #4B0082
+     * Rows 9-12: #38006B
+   
+   - Gold Border:
+     * Top edge (y=0): #FFD700
+     * Left edge (x=0): #FFE44D
+     * Right edge (x=16): #D4AF37
+     * Bottom edge (y=12): #D4AF37
+   
+   - Main Plus Symbol:
+     * Vertical (x=7-8, y=2-10):
+       - Left edge: #FFE44D
+       - Center: #FFD700
+       - Right edge: #D4AF37
+     * Horizontal (x=5-6, y=4-8):
+       - Same as vertical
+
+2. HEAD SECTION (0,20 to 8,28)
+   - Background Gradient:
+     * Rows 20-22: #6A1B9A
+     * Rows 23-25: #4B0082
+     * Rows 26-28: #38006B
+   
+   - Eyes:
+     * Left Eye (2,22 to 3,23):
+       - Center: #FF0000
+       - Inner: #FF4500
+       - Outer: #FF6B6B
+     * Right Eye (5,22 to 6,23):
+       - Same as left
+
+3. ARM SECTION (32,0 to 36,8)
+   - Background Gradient:
+     * Left edge (x=32): #6A1B9A
+     * Center (x=34): #4B0082
+     * Right edge (x=36): #38006B
+   
+   - Plus Symbol:
+     * Vertical (33-34, 2-6)
+     * Horizontal (32-36, 4-5)
+
+4. LEG SECTION (48,0 to 52,8)
+   - Mirror of ARM section
+   - Same exact patterns and colors
+
+COLOR CODES:
+#4B0082 - Main Purple
+#6A1B9A - Light Purple
+#38006B - Dark Purple
+#FFD700 - Gold Base
+#FFE44D - Gold Light
+#D4AF37 - Gold Dark
+#FF0000 - Eye Red
+#FF4500 - Eye Inner Glow
+#FF6B6B - Eye Outer Glow
+
+TEXTURE TIPS:
+1. Use a pixel art program like Aseprite or GraphicsGale
+2. Start with the base colors
+3. Add gradients using the color codes
+4. Add the gold trim
+5. Add the plus symbols
+6. Add the eyes and glow effects
+7. Add final details and highlights 

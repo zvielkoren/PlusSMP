@@ -1,0 +1,50 @@
+{
+  "format_version": "1.8.0",
+  "animations": {
+    "animation.plusboss.idle": {
+      "loop": true,
+      "animation_length": 2,
+      "bones": {
+        "upper_body": {
+          "rotation": ["Math.sin(query.anim_time * 180) * 2", 0, 0]
+        },
+        "left_arm": {
+          "rotation": ["Math.sin(query.anim_time * 180) * 5", 0, 0]
+        },
+        "right_arm": {
+          "rotation": ["Math.sin(query.anim_time * 180) * 5", 0, 0]
+        }
+      }
+    },
+    "animation.plusboss.walk": {
+      "loop": true,
+      "animation_length": 1,
+      "bones": {
+        "upper_body": {
+          "rotation": ["Math.sin(query.anim_time * 360) * 5", 0, 0]
+        },
+        "left_arm": {
+          "rotation": ["-30 * Math.sin(query.anim_time * 360)", 0, 0]
+        },
+        "right_arm": {
+          "rotation": ["30 * Math.sin(query.anim_time * 360)", 0, 0]
+        }
+      }
+    },
+    "animation.plusboss.attack": {
+      "loop": false,
+      "animation_length": 0.5,
+      "bones": {
+        "upper_body": {
+          "rotation": ["Math.sin(query.anim_time * 720) * 10", 0, 0]
+        },
+        "left_arm": {
+          "rotation": ["-90 * Math.sin(query.anim_time * 720)", 0, 0]
+        },
+        "right_arm": {
+          "rotation": ["-90 * Math.sin(query.anim_time * 720)", 0, 0]
+        }
+      }
+    }
+  }
+}

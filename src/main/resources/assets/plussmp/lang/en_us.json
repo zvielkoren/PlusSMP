@@ -1,0 +1,5 @@
+{
+  "death.attack.player.invis": "%1$s was killed by %2$s using Invis Power",
+  "item.plus_smp.kochavlet": "Kochavlet",
+  "item.plus_smp.kochavlet.used": "You received %s!"
+}
