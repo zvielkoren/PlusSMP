@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:dirt"
+    },
+    "G": {
+      "item": "minecraft:dirt"
+    },
+    "R": {
+      "item": "minecraft:dirt"
+    }
+  },
+  "pattern": [
+    "GRG",
+    "RDR",
+    "GRG"
+  ],
+  "result": {
+    "count": 1,
+    "id": "plussmp:cage_power"
+  }
+}
