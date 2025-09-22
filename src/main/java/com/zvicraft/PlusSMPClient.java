@@ -2,6 +2,7 @@ package com.zvicraft;
 
 import com.zvicraft.client.ClientKeyHandler;
 import com.zvicraft.discord.DiscordIntegration;
+import com.zvicraft.item.ModItemGroups;
 import com.zvicraft.keybinding.KeyBindingHandler;
 import com.zvicraft.keybinding.KeyBindings;
 import net.fabricmc.api.ClientModInitializer;
@@ -21,6 +22,9 @@ public class PlusSMPClient implements ClientModInitializer {
         // Register client event handlers
         ClientKeyHandler.register();
         
+        // Register item groups on client side as backup
+//        ModItemGroups.registerItemGroups();
+
         // Initialize Discord RPC
         DiscordIntegration.initialize();
         // Register shutdown hook for Discord RPC

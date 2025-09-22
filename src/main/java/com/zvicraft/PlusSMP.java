@@ -13,10 +13,12 @@ import com.zvicraft.power.PowerEvents;
 import com.zvicraft.power.PowerSystem;
 import com.zvicraft.item.ModItemGroups;
 import com.zvicraft.trust.TrustSystem;
+import net.fabricmc.api.EnvType;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +54,12 @@ public class PlusSMP implements ModInitializer {
         // Register blocks
         ModBlocks.registerModBlocks();
         
-        // Register item groups
-        ModItemGroups.registerItemGroups();
-        
+//        // Only register item groups on client side to prevent server-client conflicts
+//        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
+            ModItemGroups.registerItemGroups();
+            ModItems.registerCustomInventoryTab();
+//        }
+
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
             PowerCommand.register(dispatcher);

@@ -22,49 +22,112 @@ public class ModItems {
     public static KochavletItem KOCHAVLET;
 
     public static void registerModItems() {
-        // Register GENERAL_POWER first
-        GENERAL_POWER = Registry.register(
-            Registries.ITEM,
-            Identifier.of(PlusSMP.MOD_ID, "general_power"),
-            new PowerDropItem(
-                new Item.Settings().maxCount(1),
-                PowerType.KOCHAVLET.name()
-            )
-        );
+        try {
+//            // Register GENERAL_POWER first
+//            GENERAL_POWER = Registry.register(
+//                Registries.ITEM,
+//                Identifier.of(PlusSMP.MOD_ID, "general"),
+//                new PowerDropItem(
+//                    new Item.Settings().maxCount(1),
+//                    PowerType.KOCHAVLET.name()
+//                )
+//            );
 
-        // Register power items for each PowerType
-        for (PowerType powerType : PowerType.values()) {
-            String itemName = powerType.name().toLowerCase() + "_power";
-            PowerDropItem powerItem = new PowerDropItem(
-                new Item.Settings().maxCount(1),
-                powerType.name()
+            // Register power items for each PowerType
+            for (PowerType powerType : PowerType.values()) {
+                if (powerType != null && powerType.name() != null) {
+                    String itemName = powerType.name().toLowerCase() + "_power";
+                    PowerDropItem powerItem = new PowerDropItem(
+                        new Item.Settings().maxCount(1),
+                        powerType.name()
+                    );
+                    PowerDropItem registeredItem = Registry.register(
+                        Registries.ITEM,
+                        Identifier.of(PlusSMP.MOD_ID, itemName),
+                        powerItem
+                    );
+                    if (registeredItem != null) {
+                        POWER_ITEMS.put(powerType, registeredItem);
+                    }
+                }
+            }
+
+            // Register Kochavlet item
+            KOCHAVLET = Registry.register(
+                Registries.ITEM, 
+                Identifier.of(PlusSMP.MOD_ID, "kochavlet"),
+                new KochavletItem(new Item.Settings().maxCount(16))
             );
-            POWER_ITEMS.put(powerType, Registry.register(
-                Registries.ITEM,
-                Identifier.of(PlusSMP.MOD_ID, itemName),
-                powerItem
-            ));
+
+            // Only add items to creative tabs if they were successfully registered
+            ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
+                POWER_ITEMS.values().stream()
+                    .filter(item -> item != null)
+                    .forEach(entries::add);
+                if (KOCHAVLET != null) {
+                    entries.add(KOCHAVLET);
+                }
+            });
+
+            // Add items to custom inventory tab
+            ItemGroupEvents.modifyEntriesEvent(ItemGroups.TOOLS).register(entries -> {
+                try {
+                    // Add all power items to custom tab
+                    POWER_ITEMS.values().stream()
+                        .filter(item -> item != null)
+                        .forEach(entries::add);
+
+                    // Add Kochavlet item to custom tab
+                    if (KOCHAVLET != null) {
+                        entries.add(KOCHAVLET);
+                    }
+
+                    System.out.println("Added " + POWER_ITEMS.size() + " power items and Kochavlet to custom inventory tab");
+                } catch (Exception e) {
+                    System.err.println("Error adding items to custom inventory tab: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            });
+
+            System.out.println("Registered Mod Items for " + PlusSMP.MOD_ID);
+        } catch (Exception e) {
+            System.err.println("Error registering mod items: " + e.getMessage());
+            e.printStackTrace();
         }
-
-
-        // Register Kochavlet item
-        KOCHAVLET = Registry.register(
-            Registries.ITEM, 
-            Identifier.of(PlusSMP.MOD_ID, "kochavlet"),
-            new KochavletItem(new Item.Settings().maxCount(16))
-        );
-
-
-        // הוספת האייטמים לטאב הקריאטיב INGREDIENTS
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.INGREDIENTS).register(entries -> {
-            POWER_ITEMS.values().forEach(entries::add);
-            entries.add(KOCHAVLET);
-        });
-
-        System.out.println("Registered Mod Items for " + PlusSMP.MOD_ID);
     }
 
     public static PowerDropItem getPowerItem(PowerType powerType) {
         return POWER_ITEMS.get(powerType);
+    }
+
+    // Method to register items in custom inventory tab - call this after ModItemGroups.registerItemGroups()
+    public static void registerCustomInventoryTab() {
+        try {
+            if (ModItemGroups.PLUS_SMP_GROUP != null) {
+                ItemGroupEvents.modifyEntriesEvent(ModItemGroups.PLUS_SMP_GROUP_KEY).register(entries -> {
+                    try {
+                        // Add all power items to custom tab
+                        POWER_ITEMS.values().stream()
+                            .filter(item -> item != null)
+                            .forEach(entries::add);
+
+                        // Add Kochavlet item to custom tab
+                        if (KOCHAVLET != null) {
+                            entries.add(KOCHAVLET);
+                        }
+
+                        System.out.println("Added " + POWER_ITEMS.size() + " power items and Kochavlet to custom inventory tab");
+                    } catch (Exception e) {
+                        System.err.println("Error adding items to custom inventory tab: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            } else {
+                System.err.println("ModItemGroups.PLUS_SMP_GROUP is null, cannot register custom inventory tab");
+            }
+        } catch (Exception e) {
+            System.err.println("Error registering custom inventory tab: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
