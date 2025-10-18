@@ -17,7 +17,7 @@ import java.util.Random;
 public class PowerSystem {
     public static final Map<UUID, List<PowerData>> playerPowers = Collections.synchronizedMap(new HashMap<>());
     private static final int MAX_ACTIVE_POWERS = 2;
-    private static final int PREPARATION_TIME = 60; // seconds
+    private static final int PREPARATION_TIME = 1; // seconds
     private static final Map<UUID, Boolean> firstJoinPlayers = Collections.synchronizedMap(new HashMap<>());
     private static final Object lock = new Object(); // For thread-safe operations
     public static PowerDatabase PowerDatabase;

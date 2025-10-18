@@ -283,8 +283,8 @@ public class PowerEffects {
         StatusEffectInstance wither = new StatusEffectInstance( StatusEffects.WITHER, 200, 0);
 
         // Permanent Speed I
-        RegistryEntry<StatusEffect> speed = Registries.STATUS_EFFECT.getEntry((StatusEffect) StatusEffects.SPEED);
-        StatusEffectInstance speedEffect = new StatusEffectInstance( speed, StatusEffectInstance.INFINITE, 0, false, false
+
+        StatusEffectInstance speedEffect = new StatusEffectInstance( StatusEffects.SPEED, StatusEffectInstance.INFINITE, 0, false, false
         );
         player.addStatusEffect(speedEffect);
 

@@ -61,6 +61,7 @@ private static void createTables() throws SQLException {
         // Create first_join table
         stmt.execute("CREATE TABLE IF NOT EXISTS first_join (" +
             "player_uuid TEXT PRIMARY KEY" +
+
             ")");
     }
 }
