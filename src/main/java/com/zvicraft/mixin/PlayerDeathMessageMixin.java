@@ -19,7 +19,7 @@ public abstract class PlayerDeathMessageMixin {
                 // Obfuscate the death message
                 Text obfuscatedMessage = Text.translatable("death.attack.player.invis", 
                     player.getDisplayName(), 
-                    Text.literal("Someone"));
+                    Text.literal(""));
                 cir.setReturnValue(obfuscatedMessage);
             }
         }

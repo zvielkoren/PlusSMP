@@ -136,18 +136,18 @@ private static void createTables() throws SQLException {
                         PowerType power2 = PowerType.valueOf(power2Str);
                         PowerSystem.setPowerInNextSlot(player, power2, 2);
                     }
-
-                    // Load key bindings
-                    int key1 = rs.getInt("key1");
-                    int key2 = rs.getInt("key2");
-
-                    if (key1 != 0) {
-                        KeyBindings.updateKeyBinding(1, key1);
-                    }
-
-                    if (key2 != 0) {
-                        KeyBindings.updateKeyBinding(2, key2);
-                    }
+//
+//                    // Load key bindings
+//                    int key1 = rs.getInt("key1");
+//                    int key2 = rs.getInt("key2");
+//
+//                    if (key1 != 0) {
+//                        KeyBindings.updateKeyBinding(1, key1);
+//                    }
+//
+//                    if (key2 != 0) {
+//                        KeyBindings.updateKeyBinding(2, key2);
+//                    }
 
                     return powers;
                 } else {

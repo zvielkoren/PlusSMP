@@ -79,6 +79,7 @@ public class PlusSMP implements ModInitializer {
         PowerDatabase PowerDatabase = new PowerDatabase();
         PowerSystem.initialize(server, PowerDatabase);
         TrustSystem.initialize();
+        PowerEvents.register();
     }
 
     private void onServerStopped(MinecraftServer server) {

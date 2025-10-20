@@ -52,11 +52,7 @@ public class PowerSystem {
         return playerPowers.containsKey(player.getUuid());
     }
 
-    public static boolean hasPower(ServerPlayerEntity player) {
-        List<PowerData> powers = playerPowers.get(player.getUuid());
-        return powers != null && !powers.isEmpty();
-    }
-    
+
     public static boolean hasPower(ServerPlayerEntity player, PowerType powerType) {
         List<PowerData> powers = playerPowers.get(player.getUuid());
         if (powers == null) return false;
@@ -87,10 +83,6 @@ public class PowerSystem {
         return powers.get(0);
     }
 
-    public static PowerType getPower(ServerPlayerEntity player) {
-        PowerData data = getPlayerPower(player);
-        return data != null ? data.powerType : null;
-    }
 
     public static boolean hasEmptyPowerSlot(ServerPlayerEntity player) {
         List<PowerData> powers = playerPowers.get(player.getUuid());
@@ -173,25 +165,6 @@ public class PowerSystem {
             powers.clear();
             PowerDatabase.savePlayerPowers(player, null, null);
         }
-    }
-
-    public static boolean startPowerPreparation(ServerPlayerEntity player, PowerType powerType) {
-        UUID playerId = player.getUuid();
-        if (hasPower(playerId, powerType)) return false;
-
-        if (getActivePowerCount(playerId) >= MAX_ACTIVE_POWERS) {
-            player.sendMessage(Text.of("You can only have " + MAX_ACTIVE_POWERS + " active powers!"));
-            return false;
-        }
-
-        List<PowerData> powers = playerPowers.computeIfAbsent(playerId, k -> new ArrayList<>());
-        powers.add(new PowerData(powerType, System.currentTimeMillis()));
-
-        player.sendMessage(Text.of("Started preparing " + powerType.getName() + " power..."));
-        AnimationSystem.playPowerPreparationAnimation(player);
-        server.getPlayerManager().broadcast(Text.of("The Effect " + powerType.getName() + " was made by " + player.getName().getString()), false);
-
-        return true;
     }
 
     public static boolean hasPower(UUID playerId, PowerType powerType) {
@@ -288,10 +261,6 @@ public class PowerSystem {
         return server.getPlayerManager().getPlayer(playerId);
     }
 
-//    public static PowerType getRandomPower() {
-//        PowerType[] powers = PowerType.values();
-//        return powers[new Random().nextInt(powers.length)];
-//    }
 
     public static void giveRandomPowerOnJoin(ServerPlayerEntity player) {
         UUID playerId = player.getUuid();
